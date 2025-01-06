@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\TeachersDatabaseResource\Pages;
 
 use App\Filament\Resources\TeachersDatabaseResource;
+use App\Filament\Resources\TeachersDatabaseResource\Widgets\ListGalleryWidget;
+use App\Models\TeachersDatabase;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\EditRecord;
@@ -14,11 +16,17 @@ class EditTeachersDatabase extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('presensi')
-                ->label('Upload Image')
-                ->icon('heroicon-o-plus-circle')
-                ->url(route('faces.index', ['role' => $this->record->position, 'id' => $this->record->id])),
             Actions\DeleteAction::make(),
+        ];
+    }
+
+
+    protected function getFooterWidgets(): array
+    {
+        return [
+            ListGalleryWidget::make([
+                'record' => $this->record,
+            ])
         ];
     }
 }

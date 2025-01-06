@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GalleryRecognation;
+use Filament\Notifications\Notification;
 use Illuminate\Http\Request;
 
 class FaceRecognationController extends Controller
@@ -43,6 +44,7 @@ class FaceRecognationController extends Controller
 
         // Flash message dan redirect
         session()->flash('success', 'Gambar berhasil diupload!');
+
         return redirect()->back();
     }
 }

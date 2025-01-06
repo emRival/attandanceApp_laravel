@@ -34,7 +34,7 @@
 <body>
     <!-- Tombol Back -->
     <div class="w-full flex justify-start p-4">
-        <button onclick="window.location.href='http://127.0.0.1:8000/admin/user-gallerys'"
+        <button onclick="window.location.href='{{ route('filament.admin.resources.teachers-databases.edit', $id) }}'"
             class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
             Back
         </button>
@@ -104,7 +104,7 @@
             if (successAlert) {
                 setTimeout(() => {
                     successAlert.remove();
-                }, 5000);
+                }, 1000);
             }
         });
 
@@ -113,29 +113,6 @@
             const container = document.getElementById('imagesContainer');
             container.classList.toggle('hidden');
         }
-
-        // Pastikan deteksi wajah tetap sinkron dengan video
-        async function adjustFaceDetection(videoElement) {
-            const displaySize = {
-                width: videoElement.offsetWidth,
-                height: videoElement.offsetHeight
-            };
-            const detections = await faceapi.detectAllFaces(videoElement, new faceapi.TinyFaceDetectorOptions());
-            const resizedDetections = faceapi.resizeResults(detections, displaySize);
-            const canvas = faceapi.createCanvasFromMedia(videoElement);
-
-            if (!document.querySelector('canvas')) {
-                document.body.append(canvas);
-            }
-            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-            faceapi.draw.drawDetections(canvas, resizedDetections);
-        }
-
-        // Jalankan face detection saat video dimuat
-        const video = document.getElementById('video');
-        video.addEventListener('loadeddata', () => {
-            setInterval(() => adjustFaceDetection(video), 100);
-        });
     </script>
 
     <script src="{{ asset('face/face-script.js') }}"></script>

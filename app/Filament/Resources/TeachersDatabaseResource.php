@@ -4,10 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TeachersDatabaseResource\Pages;
 use App\Filament\Resources\TeachersDatabaseResource\RelationManagers;
+use App\Filament\Resources\TeachersDatabaseResource\Widgets\ListGalleryWidget;
 use App\Models\TeachersDatabase;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\VerticalAlignment;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,25 +27,33 @@ class TeachersDatabaseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Group::make()
+                Forms\Components\Grid::make(4)
                     ->schema([
-                        Forms\Components\Section::make()
-                            ->schema([
-                                Forms\Components\TextInput::make('name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('nip')
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('position')
-                                    ->default('teacher')
-                                    ->disabled(),
-                                Forms\Components\Toggle::make('is_active')
-                                    ->default(true)
-                                    ->required(),
-                                Forms\Components\Textarea::make('face')
-                                    ->columnSpanFull(),
-                            ]),
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+                        Forms\Components\TextInput::make('nip')
+                            ->maxLength(255),
+                        Forms\Components\ToggleButtons::make('is_active')
+                            ->label('User Status')
+                            ->boolean()
+                            ->options([
+                                '1' => 'Active',
+                                '0' => 'Inactive',
+                            ])
+                            ->default('true')
+                            ->grouped(),
+                        Forms\Components\TextInput::make('position')
+                            ->default('teacher')
+                            ->disabled(),
+
+                        Forms\Components\TextInput::make('face')
+                            ->label('Face 128D Dataset')
+                            ->disabled(),
                     ]),
+
+
             ]);
     }
 
@@ -91,6 +101,7 @@ class TeachersDatabaseResource extends Resource
             //
         ];
     }
+
 
     public static function getPages(): array
     {
