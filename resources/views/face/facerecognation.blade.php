@@ -34,7 +34,8 @@
 <body>
     <!-- Tombol Back -->
     <div class="w-full flex justify-start p-4">
-        <button onclick="window.location.href='{{ route('filament.admin.resources.teachers-databases.edit', $id) }}'"
+        <button
+            onclick="window.location.href='{{ $role === 'teacher' ? route('filament.admin.resources.teachers-databases.edit', $id) : route('filament.admin.resources.students-databases.edit', $id) }}'"
             class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
             Back
         </button>

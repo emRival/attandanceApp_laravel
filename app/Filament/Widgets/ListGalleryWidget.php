@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Filament\Resources\TeachersDatabaseResource\Widgets;
+namespace App\Filament\Widgets;
 
 use App\Models\GalleryRecognation;
+use App\Services\FaceDescriptorService;
+use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -43,11 +45,35 @@ class ListGalleryWidget extends BaseWidget
                         'role' => $role,
                         'id' => $this->record->id,
                     ])),
+                Tables\Actions\Action::make('Generate Face Descriptor')
+                    ->requiresConfirmation()
+                    ->action(fn() => $this->generateFaceDescriptor()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    protected function generateFaceDescriptor(): void
+    {
+        $service = app(FaceDescriptorService::class);
+
+        try {
+            $service->generateDescriptorForUser($this->record->id, $this->record->position);
+
+            Notification::make()
+                ->title('Success')
+                ->body('Face descriptors generated successfully!')
+                ->success()
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Error')
+                ->body('Failed to generate face descriptors: ' . $e->getMessage())
+                ->danger()
+                ->send();
+        }
     }
 }

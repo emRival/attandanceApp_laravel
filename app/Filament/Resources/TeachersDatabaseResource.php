@@ -3,8 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TeachersDatabaseResource\Pages;
-use App\Filament\Resources\TeachersDatabaseResource\RelationManagers;
-use App\Filament\Resources\TeachersDatabaseResource\Widgets\ListGalleryWidget;
+
 use App\Models\TeachersDatabase;
 use Filament\Forms;
 use Filament\Forms\Form;

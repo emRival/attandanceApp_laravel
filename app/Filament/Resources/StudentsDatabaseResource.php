@@ -25,35 +25,36 @@ class StudentsDatabaseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Group::make()
+                Forms\Components\Grid::make(4)
                     ->schema([
-                        Forms\Components\Section::make()
-                            ->schema([
-                                Forms\Components\TextInput::make('name')
-                                    ->required()
-                                    ->maxLength(255),
-                                Forms\Components\TextInput::make('class')
-                                    ->required(),
-                                Forms\Components\TextInput::make('nis')
-                                    ->maxLength(255),
 
-                            ]),
-                    ]),
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make()
-                            ->schema([
-                                Forms\Components\TextInput::make('position')
-                                    ->default('student')
-                                    ->disabled(),
-                                Forms\Components\Toggle::make('is_active')
-                                    ->default(true)
-                                    ->required(),
-                                Forms\Components\Textarea::make('face')
-                                    ->columnSpanFull(),
-                            ]),
-                    ]),
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->columnSpanFull()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('class')
+                            ->required(),
+                        Forms\Components\TextInput::make('nis')
+                            ->maxLength(255),
+                        Forms\Components\ToggleButtons::make('is_active')
+                            ->label('User Status')
+                            ->boolean()
+                            ->options([
+                                '1' => 'Active',
+                                '0' => 'Inactive',
+                            ])
+                            ->default('true')
+                            ->grouped(),
 
+
+                        Forms\Components\TextInput::make('position')
+                            ->default('student')
+                            ->disabled(),
+
+                        Forms\Components\Textarea::make('face')
+                            ->disabled()
+                            ->columnSpanFull()
+                    ]),
             ]);
     }
 
@@ -69,6 +70,10 @@ class StudentsDatabaseResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('position')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('count_face_recognation')
+                    ->label('Dataset')
+                    ->badge()
+                    ->alignCenter(),
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Status'),
                 Tables\Columns\TextColumn::make('created_at')

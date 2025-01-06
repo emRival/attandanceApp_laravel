@@ -20,4 +20,14 @@ class StudentsDatabase extends Model
         return $this->hasMany(StudentsAttandance::class, 'student_id');
     }
 
+    public function faceRecognations()
+    {
+        return $this->hasMany(GalleryRecognation::class, 'student_id');
+    }
+
+    // count face recognation
+    public function getCountFaceRecognationAttribute()
+    {
+        return $this->faceRecognations()->count();
+    }
 }

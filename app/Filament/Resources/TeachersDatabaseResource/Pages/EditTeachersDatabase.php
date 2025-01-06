@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\TeachersDatabaseResource\Pages;
 
 use App\Filament\Resources\TeachersDatabaseResource;
-use App\Filament\Resources\TeachersDatabaseResource\Widgets\ListGalleryWidget;
+use App\Filament\Widgets\ListGalleryWidget;
 use App\Models\TeachersDatabase;
 use Filament\Actions;
 use Filament\Actions\Action;
