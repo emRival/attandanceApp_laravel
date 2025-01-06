@@ -57,6 +57,10 @@ class TeachersDatabaseResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('position')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('count_face_recognation')
+                    ->label('Dataset')
+                    ->badge()
+                    ->alignCenter(),
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Status'),
                 Tables\Columns\TextColumn::make('created_at')

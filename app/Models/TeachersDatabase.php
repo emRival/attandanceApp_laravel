@@ -20,6 +20,17 @@ class TeachersDatabase extends Model
         return $this->hasMany(TeachersAttandance::class, 'teacher_id');
     }
 
+    public function faceRecognations()
+    {
+        return $this->hasMany(GalleryRecognation::class, 'teacher_id');
+    }
+
+    // count face recognation
+    public function getCountFaceRecognationAttribute()
+    {
+        return $this->faceRecognations()->count();
+    }
+
     public function user()
     {
         return $this->hasOne(User::class, 'teacher_id');
