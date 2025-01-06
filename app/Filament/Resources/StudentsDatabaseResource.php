@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StudentsDatabaseResource\Pages;
 use App\Filament\Resources\StudentsDatabaseResource\RelationManagers;
+use App\Filament\Widgets\ListGalleryWidget;
 use App\Models\StudentsDatabase;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -18,6 +19,8 @@ class StudentsDatabaseResource extends Resource
     protected static ?string $model = StudentsDatabase::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-circle-stack';
+
+    protected static bool $isDiscovered = true;
 
     protected static ?string $navigationGroup = 'Database';
 
@@ -97,7 +100,12 @@ class StudentsDatabaseResource extends Resource
                 ]),
             ]);
     }
-
+    public static function getWidgets(): array
+    {
+        return [
+            ListGalleryWidget::class
+        ];
+    }
 
     public static function getRelations(): array
     {

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TeachersDatabaseResource\Pages;
-
+use App\Filament\Widgets\ListGalleryWidget;
 use App\Models\TeachersDatabase;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -98,6 +98,13 @@ class TeachersDatabaseResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            ListGalleryWidget::class
         ];
     }
 

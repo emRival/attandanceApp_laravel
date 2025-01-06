@@ -12,7 +12,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class ListGalleryWidget extends BaseWidget
 {
     public $record; // Record akan diterima langsung dari halaman edit
-
+    protected static bool $isDiscovered = false;
     protected static ?string $heading = 'Face Dataset';
     protected int | string | array $columnSpan = 'full';
 
