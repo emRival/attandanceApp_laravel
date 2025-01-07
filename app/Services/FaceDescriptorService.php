@@ -56,6 +56,8 @@ class FaceDescriptorService
         $averageDescriptor = $this->calculateAverageDescriptor($faceDescriptors);
 
         $user = $role === 'teacher' ? TeachersDatabase::find($userId) : StudentsDatabase::find($userId);
+
+        // dd($user);
         if (!$user) {
             throw new \Exception('User not found.');
         }

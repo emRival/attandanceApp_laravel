@@ -63,6 +63,7 @@ class ListGalleryWidget extends BaseWidget
         $service = app(FaceDescriptorService::class);
 
         try {
+            // dd($this->record->id, $this->record->position);
             $service->generateDescriptorForUser($this->record->id, $this->record->position);
 
             Notification::make()

@@ -1,3 +1,3 @@
 <div class="image-view">
-    <img src="{{ Storage::url($image) }}" alt="image" width="50%" radius="50%">
+    <img src="data:image/jpeg;base64,{{ $image }}" alt="image" width="110%">
 </div>
