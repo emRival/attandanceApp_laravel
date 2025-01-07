@@ -33,7 +33,9 @@ class ListGalleryWidget extends BaseWidget
             )
             ->columns([
                 Tables\Columns\ImageColumn::make('image')->square(),
-                Tables\Columns\TextColumn::make('created_at')->label('Uploaded At'),
+                Tables\Columns\TextColumn::make('created_at')->label('Uploaded At')
+                    ->since()
+                    ->dateTimeTooltip(),
             ])
             ->actions([
                 Tables\Actions\DeleteAction::make(),
