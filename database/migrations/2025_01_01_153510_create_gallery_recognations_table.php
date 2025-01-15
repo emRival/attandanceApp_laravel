@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('gallery_recognations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('student_id')->constrained('students_databases')->nullable()->cascadeOnDelete();
-            $table->foreignId('teacher_id')->constrained('teachers_databases')->nullable()->cascadeOnDelete();
+            $table->foreignId('student_id')->nullable()->constrained('students_databases')->cascadeOnDelete();
+            $table->foreignId('teacher_id')->nullable()->constrained('teachers_databases')->cascadeOnDelete();
             $table->string('image');
             $table->timestamps();
         });
