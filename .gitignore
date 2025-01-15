@@ -1,21 +1,44 @@
+# Ignore the PHP unit cache
 /.phpunit.cache
+
+# Ignore node_modules folder
 /node_modules
+
+# Ignore public build assets
 /public/build
 /public/hot
+
+# Ignore public storage links (symlinks)
 /public/storage
+
+# Ignore key files in storage
 /storage/*.key
 /storage/pail
+
+# Ignore vendor directory
 /vendor
+
+# Ignore environment files
 .env
 .env.backup
 .env.production
+
+# Ignore PHPactor and PHPUnit result cache
 .phpactor.json
 .phpunit.result.cache
+
+# Ignore Homestead configuration
 Homestead.json
 Homestead.yaml
+
+# Ignore authentication configuration
 auth.json
+
+# Ignore npm and yarn debug logs
 npm-debug.log
 yarn-error.log
+
+# Ignore IDE and editor configuration files
 /.fleet
 /.idea
 /.nova
@@ -24,5 +47,6 @@ yarn-error.log
 
 # Ignore everything in storage except the specified folders
 /storage/*
+!/storage/app/
 !/storage/app/models/
 !/storage/app/scripts/
