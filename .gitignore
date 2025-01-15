@@ -22,11 +22,7 @@ yarn-error.log
 /.vscode
 /.zed
 
-# Exclude everything in storage except app/models and app/scripts
+# Ignore everything in storage except the specified folders
 /storage/*
-!/storage/app/
-/storage/app/*
 !/storage/app/models/
-/storage/app/models/**
 !/storage/app/scripts/
-/storage/app/scripts/**
