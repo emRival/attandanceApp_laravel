@@ -21,3 +21,12 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Exclude everything in storage except app/models and app/scripts
+/storage/*
+!/storage/app/
+/storage/app/*
+!/storage/app/models/
+/storage/app/models/**
+!/storage/app/scripts/
+/storage/app/scripts/**

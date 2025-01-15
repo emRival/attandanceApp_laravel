@@ -15,12 +15,7 @@
     "vite": "^6.0"
   },
   "dependencies": {
-    "@tensorflow/tfjs": "^4.22.0",
-    "@tensorflow/tfjs-node": "^4.22.0",
-    "@tensorflow/tfjs-node-gpu": "^4.22.0",
-    "@vladmandic/face-api": "^1.7.14",
     "canvas": "^3.0.1",
-    "face-api.js": "^0.20.0",
-    "tfjs-image-recognition-base": "^0.6.0"
+    "face-api.js": "^0.22.2"
   }
 }

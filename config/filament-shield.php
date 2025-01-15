@@ -87,14 +87,7 @@ return [
     ],
 
     'register_role_policy' => [
-<<<<<<< HEAD
-        'enabled' => true,
-    ],
-
-];
-=======
         'enabled' => false,
     ],
 
 ];
->>>>>>> ca78b56 (fix: migrations gallerys)
