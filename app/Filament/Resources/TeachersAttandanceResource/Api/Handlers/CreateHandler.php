@@ -26,39 +26,51 @@ class CreateHandler extends Handlers
 
     public function handler(Request $request)
     {
-        // dd($request->all());
-        $position = $request->input('position');
-        $date = Carbon::parse($request->input('date'))->toDateString();
-        $time = $request->input('time');
-        $timesConfigId = $request->input('times_config_id');
-        $capturedImage = $request->input('captured_image');
-        $id = $request->input('id'); // ID user yang mengirimkan data
+        $attendances = $request->input(); // Ambil semua data sebagai array
 
-        if ($position === 'student') {
-            $this->handleAttendance(
-                StudentsAttandance::class,
-                StudentsDatabase::class,
-                'student_id',
-                $id,
-                $date,
-                $time,
-                $timesConfigId,
-                $capturedImage
-            );
-        } elseif ($position === 'teacher') {
-            $this->handleAttendance(
-                TeachersAttandance::class,
-                TeachersDatabase::class,
-                'teacher_id',
-                $id,
-                $date,
-                $time,
-                $timesConfigId,
-                $capturedImage
-            );
+        if (!is_array($attendances)) {
+            return static::sendErrorResponse("Invalid data format", 400);
         }
 
-        return static::sendSuccessResponse([], "Attendance processed successfully");
+        foreach ($attendances as $attendanceData) {
+            // Pastikan data memiliki format yang benar
+            if (!isset($attendanceData['position'], $attendanceData['id'], $attendanceData['date'], $attendanceData['time'], $attendanceData['times_config_id'])) {
+                continue; // Lewati data yang tidak valid
+            }
+
+            $position = $attendanceData['position'];
+            $id = $attendanceData['id'];
+            $date = Carbon::parse($attendanceData['date'])->toDateString();
+            $time = $attendanceData['time'];
+            $timesConfigId = $attendanceData['times_config_id'];
+            $capturedImage = $attendanceData['captured_image'] ?? null;
+
+            if ($position === 'student') {
+                $this->handleAttendance(
+                    StudentsAttandance::class,
+                    StudentsDatabase::class,
+                    'student_id',
+                    $id,
+                    $date,
+                    $time,
+                    $timesConfigId,
+                    $capturedImage
+                );
+            } elseif ($position === 'teacher') {
+                $this->handleAttendance(
+                    TeachersAttandance::class,
+                    TeachersDatabase::class,
+                    'teacher_id',
+                    $id,
+                    $date,
+                    $time,
+                    $timesConfigId,
+                    $capturedImage
+                );
+            }
+        }
+
+        return static::sendSuccessResponse([], "All attendances processed successfully");
     }
 
     private function handleAttendance($attendanceModel, $userModel, $userIdField, $userId, $date, $time, $timesConfigId, $capturedImage)
@@ -84,7 +96,7 @@ class CreateHandler extends Handlers
             // Perbarui data untuk pengguna tertentu
             $attendanceModel::updateOrCreate(
                 [
-                    $userIdField => $userId,
+                    $userIdField => $userId,    
                     'date' => $date,
                 ],
                 [

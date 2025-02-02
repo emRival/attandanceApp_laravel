@@ -50,3 +50,7 @@ yarn-error.log
 !/storage/app/
 !/storage/app/models/
 !/storage/app/scripts/
+
+**/caddy
+frankenphp
+frankenphp-worker.php

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Model;
 
 class GalleryRecognation extends Model
@@ -13,6 +14,15 @@ class GalleryRecognation extends Model
         'image',
     ];
 
+    protected static function booted(): void
+    {
+        self::deleted(
+            function (GalleryRecognation $galleryRecognation) {
+                Storage::disk('public')->delete($galleryRecognation->image);
+            }
+        );
+    }
+
     public function student()
     {
         return $this->belongsTo(StudentsDatabase::class, 'student_id');
@@ -22,7 +32,4 @@ class GalleryRecognation extends Model
     {
         return $this->belongsTo(TeachersDatabase::class, 'teacher_id');
     }
-
-
-
 }
