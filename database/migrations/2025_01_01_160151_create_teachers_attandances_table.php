@@ -18,7 +18,7 @@ return new class extends Migration
             $table->date('date');
             $table->time('time')->nullable();
             $table->enum('status', ['attend', 'late', 'absent'])->default('absent');
-            $table->string('captured_image')->nullable();
+            $table->longText('captured_image')->nullable();
             $table->timestamps();
         });
     }

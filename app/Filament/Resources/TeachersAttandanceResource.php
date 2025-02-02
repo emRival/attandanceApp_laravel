@@ -137,12 +137,13 @@ class TeachersAttandanceResource extends Resource
                     ->placeholder('Select Teacher')
                     ->relationship('teacher', 'name'),
                 SelectFilter::make('times_config_id')
-                    ->label('Time')
-                    ->placeholder('Select Time')
+                    ->label('Session')
+                    ->placeholder('Select Session')
                     ->relationship('timeConfig', 'name'),
                 Filter::make('date')
                     ->form([
-                        DatePicker::make('date_from'),
+                        DatePicker::make('date_from')
+                            ->default(now()->toDateString()),
                         DatePicker::make('date_until'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {

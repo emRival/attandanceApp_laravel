@@ -83,7 +83,11 @@ class StudentsAttandanceResource extends Resource
                 Tables\Columns\TextColumn::make('student.name')
                     ->label('Name')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('student.grade.name')
+                    ->label('Class')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('timeConfig.name')
+                    ->label('Session')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date')
@@ -114,18 +118,24 @@ class StudentsAttandanceResource extends Resource
                     )
             ])
             ->filters([
+                SelectFilter::make('student.class_id')
+                    ->label('Class')
+                    ->searchable()
+                    ->placeholder('Select Class')
+                    ->relationship('student.grade', 'name'),
                 SelectFilter::make('student_id')
                     ->label('Student')
                     ->searchable()
                     ->placeholder('Select Student')
                     ->relationship('student', 'name'),
                 SelectFilter::make('times_config_id')
-                    ->label('Time')
-                    ->placeholder('Select Time')
+                    ->label('Session')
+                    ->placeholder('Select Session')
                     ->relationship('timeConfig', 'name'),
                 Filter::make('date')
                     ->form([
-                        DatePicker::make('date_from'),
+                        DatePicker::make('date_from')
+                            ->default(now()->toDateString()),
                         DatePicker::make('date_until'),
                     ])
                     ->query(function (Builder $query, array $data): Builder {

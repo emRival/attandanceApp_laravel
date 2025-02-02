@@ -31,14 +31,18 @@ class FaceRecognationController extends Controller
         $column = $role === 'student' ? 'student_id' : 'teacher_id';
         $folder = $role === 'student' ? 'students_face' : 'teachers_face';
 
-        // Simpan gambar ke folder storage
+        // Ambil file gambar dari request
         $image = $request->file('image');
-        $image->storePublicly($folder);
-        $imagePath = $folder . '/' . $image->hashName();
+
+        // Buat nama file sesuai format yang diinginkan
+        $filename = strtolower($role) . 's_' . $request->id . '_' . now()->format('Ymd_His') . '_face.' . $image->getClientOriginalExtension();
+
+        // Simpan gambar ke storage dengan nama file yang sudah dibuat
+        $path = $image->storeAs($folder, $filename, 'public');
 
         // Simpan data ke database
         $model = new GalleryRecognation();
-        $model->image = $imagePath;
+        $model->image = $path;
         $model->{$column} = $request->id; // Dynamic column assignment
         $model->save();
 

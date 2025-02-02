@@ -11,14 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('students_databases', function (Blueprint $table) {
+        Schema::create('grades', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('class_id')->constrained('grades')->cascadeOnDelete();
-            $table->string('nis')->nullable();
-            $table->string('position')->default('student');
-            $table->boolean('is_active')->default(true);
-            $table->longText('face')->nullable();
             $table->timestamps();
         });
     }
@@ -28,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('students_databases');
+        Schema::dropIfExists('grades');
     }
 };

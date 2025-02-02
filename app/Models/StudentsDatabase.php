@@ -8,7 +8,7 @@ class StudentsDatabase extends Model
 {
     protected $fillable = [
         'name',
-        'class',
+        'class_id',
         'nis',
         'position',
         'is_active',
@@ -29,5 +29,10 @@ class StudentsDatabase extends Model
     public function getCountFaceRecognationAttribute()
     {
         return $this->faceRecognations()->count();
+    }
+
+    public function grade()
+    {
+        return $this->belongsTo(Grades::class, 'class_id');
     }
 }

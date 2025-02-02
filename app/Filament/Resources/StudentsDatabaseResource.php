@@ -35,8 +35,13 @@ class StudentsDatabaseResource extends Resource
                             ->required()
                             ->columnSpanFull()
                             ->maxLength(255),
-                        Forms\Components\TextInput::make('class')
-                            ->required(),
+                        Forms\Components\Select::make('class_id')
+                            ->label('Class')
+                            ->unique()
+                            ->relationship('grade', 'name')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
                         Forms\Components\TextInput::make('nis')
                             ->maxLength(255),
                         Forms\Components\ToggleButtons::make('is_active')
@@ -67,7 +72,7 @@ class StudentsDatabaseResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('class')
+                Tables\Columns\TextColumn::make('grade.name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nis')
                     ->searchable(),
