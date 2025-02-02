@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\GalleryRecognation;
 use App\Services\FaceDescriptorService;
+use App\Services\WebSocketFaceDescriptorService;
 use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\FileUpload;
@@ -113,7 +114,7 @@ class ListGalleryWidget extends BaseWidget
 
     protected function generateFaceDescriptor(): void
     {
-        $service = app(FaceDescriptorService::class);
+        $service = app(WebSocketFaceDescriptorService::class);
 
         try {
             $service->generateDescriptorForUser($this->record->id, $this->record->position);
