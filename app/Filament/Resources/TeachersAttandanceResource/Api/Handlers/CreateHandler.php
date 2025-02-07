@@ -76,7 +76,9 @@ class CreateHandler extends Handlers
     private function handleAttendance($attendanceModel, $userModel, $userIdField, $userId, $date, $time, $timesConfigId, $capturedImage)
     {
         // Periksa apakah ada data di tanggal ini
-        $existingAttendance = $attendanceModel::where('date', $date)->first();
+        $existingAttendance = $attendanceModel::where('date', $date)
+            ->where('times_config_id', $timesConfigId)
+            ->first(); 
 
         if (!$existingAttendance) {
             // Data pertama kali masuk di tanggal ini
@@ -96,7 +98,7 @@ class CreateHandler extends Handlers
             // Perbarui data untuk pengguna tertentu
             $attendanceModel::updateOrCreate(
                 [
-                    $userIdField => $userId,    
+                    $userIdField => $userId,
                     'date' => $date,
                 ],
                 [

@@ -4,13 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TeachersAttandanceResource\Pages;
 use App\Filament\Resources\TeachersAttandanceResource\RelationManagers;
+use App\Filament\Widgets\TotalCard;
 use App\Models\TeachersAttandance;
 use Carbon\Carbon;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
@@ -20,131 +18,169 @@ use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Auth;
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class TeachersAttandanceResource extends Resource
 {
     protected static ?string $model = TeachersAttandance::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
-
-    protected static ?string $navigationGroup = 'Attandance';
-
-
+    protected static ?string $navigationGroup = 'Attendance';
+    protected static int $resultsPerPageOptions = 25;  // Tambahan: Pagination options
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make()
-                            ->schema([
-                                Forms\Components\Select::make('teacher_id')
-                                    ->required()
-                                    ->label('Teachers Name ')
-                                    ->relationship('teacher', 'name')
-                                    ->searchable()
-                                    ->preload()
-                                    ->placeholder('Select Teacher'),
-                                Forms\Components\Select::make('times_config_id')
-                                    ->label('Session')
-                                    ->required()
-                                    ->relationship('timeConfig', 'name')
-                                    ->placeholder('Select Times Session'),
-                                Forms\Components\Select::make('status')
-                                    ->required()
-                                    ->options([
-                                        'attend' => 'Attend',
-                                        'late' => 'Late',
-                                        'absent' => 'Absent',
-                                    ]),
-                            ]),
-                    ]),
-                Forms\Components\Group::make()
-                    ->schema([
-                        Forms\Components\Section::make()
-                            ->schema([
-                                Forms\Components\DatePicker::make('date')
-                                    ->required(),
-                                Forms\Components\TimePicker::make('time')
-                                    ->required(),
-                                Forms\Components\FileUpload::make('captured_image')
-                                    ->image()
-                                    ->directory('teachers_attandance')
-                                    ->visibility('private'),
-                            ])
-                    ]),
+                Forms\Components\Grid::make(['default' => 1, 'md' => 2])->schema([
+                    Forms\Components\Group::make()
+                        ->schema([
+                            Forms\Components\Section::make('Attendance Details')
+                                ->schema([
+                                    Forms\Components\Select::make('teacher_id')
+                                        ->required()
+                                        ->label('Teacher')
+                                        ->relationship('teacher', 'name')
+                                        ->searchable()
+                                        ->preload()
+                                        ->disabled(fn(string $context): bool => $context === 'edit')
+                                        ->columnSpanFull(),
 
+                                    Forms\Components\Select::make('times_config_id')
+                                        ->label('Session')
+                                        ->required()
+                                        ->relationship('timeConfig', 'name')
+                                        ->disabled(fn(string $context): bool => $context === 'edit')
+                                        ->columnSpanFull(),
+
+                                    Forms\Components\Grid::make(3)->schema([
+                                        Forms\Components\Select::make('status')
+                                            ->required()
+                                            ->options([
+                                                'attend' => 'Attend',
+                                                'late' => 'Late',
+                                                'absent' => 'Absent',
+                                            ]),
+
+                                        Forms\Components\DatePicker::make('date')
+                                            ->required()
+                                            ->disabled(fn(string $context): bool => $context === 'edit')
+                                            ->native(false),
+
+                                        Forms\Components\TimePicker::make('time')
+                                            ->required()
+                                            ->seconds(false),
+                                    ]),
+                                ]),
+                        ]),
+
+                    Forms\Components\Group::make()
+                        ->schema([
+                            Forms\Components\Section::make('Image')
+                                ->schema([
+                                    Forms\Components\Placeholder::make('Image Preview')
+                                        ->hiddenLabel()
+                                        ->content(fn($record) => $record && $record->captured_image
+                                            ? view('livewire.image-preview', ['image' => $record->captured_image])
+                                            : 'No image available'),
+
+
+                                    Forms\Components\FileUpload::make('image_upload')
+                                        ->label('Upload Image')
+                                        ->disk('local')
+                                        ->directory('temp-uploads')
+                                        ->visibility('private')
+                                        ->image()
+                                        ->maxSize(2048)
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, $set, $record) {
+                                            if (!$state) return;
+
+                                            $base64Image = self::processImageUpload($state, $record?->id);
+                                            $set('captured_image', $base64Image);
+
+                                            // Cleanup temporary file
+                                            Storage::disk('local')->delete($state->path());
+                                        }),
+                                ]),
+                        ]),
+                ]),
             ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(
-                function (Builder $query) {
-                    $is_super_admin = Auth::user()->hasRole('super_admin');
-                    if (!$is_super_admin) {
-                        $query->where('teacher_id', Auth::user()->teacher_id);
-                    }
-                }
-            )
+            ->modifyQueryUsing(fn(Builder $query) => (
+                !Auth::user()->hasRole('super_admin')
+                ? $query->where('teacher_id', Auth::user()->teacher_id)
+                : $query
+            ))
             ->columns([
-
                 Tables\Columns\TextColumn::make('teacher.name')
                     ->label('Name')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('timeConfig.name')
-                    ->numeric()
-                    ->sortable(),
+                    ->label('Session')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
+
                 Tables\Columns\TextColumn::make('date')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('time'),
+                    ->date('d M Y')
+                    ->sortable()
+                    ->toggleable(),
+
+                Tables\Columns\TextColumn::make('time')
+                    ->time('H:i')
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
-                    ->color(function ($record) {
-                        return match ($record->status) {
-                            'attend' => 'success',
-                            'late' => 'warning',
-                            'absent' => 'danger',
-                            default => 'secondary',
-                        };
-                    }),
+                    ->formatStateUsing(fn($state) => strtoupper($state))
+                    ->color(fn($state) => match ($state) {
+                        'attend' => 'success',
+                        'late' => 'warning',
+                        'absent' => 'danger',
+                        default => 'gray'
+                    })
+                    ->toggleable(),
+
                 Tables\Columns\IconColumn::make('captured_image')
                     ->label('Image')
-                    ->icon('heroicon-m-eye')
-                    ->action(
-                        Action::make('view')
-                            ->label('View Image')
-                            ->modalContent(function ($record) {
-                                // Pastikan modal memiliki konten meskipun data tidak tersedia
-                                if ($record->captured_image) {
-                                    return view('actions.image_view', ['image' => $record->captured_image]);
-                                }
-                            })
-                            ->modalWidth(MaxWidth::Medium)
-                            ->modalSubmitAction(false) // Nonaktifkan tombol submit jika tidak diperlukan
-                    )
+                    ->icon('heroicon-m-photo')
 
+                    ->action(
+                        Tables\Actions\Action::make('view')
+                            ->modalHeading('Captured Image')
+                            ->modalContent(fn($record) => $record->captured_image ? view('actions.image_view', [
+                                'image' => $record->captured_image
+                            ]) : null)
+                            ->modalWidth(MaxWidth::Medium)
+                            ->modalSubmitAction(false)
+                            ->disabled(
+                                fn($record) => !$record->captured_image
+                            )
+                    )
             ])
             ->filters([
                 SelectFilter::make('teacher_id')
                     ->label('Teacher')
                     ->searchable()
-                    ->placeholder('Select Teacher')
-                    ->relationship('teacher', 'name'),
+                    ->relationship('teacher', 'name')
+                    ->hidden(fn() => !Auth::user()->hasRole('super_admin')),
+
                 SelectFilter::make('times_config_id')
                     ->label('Session')
-                    ->placeholder('Select Session')
                     ->relationship('timeConfig', 'name'),
+
                 Filter::make('date')
                     ->form([
                         DatePicker::make('date_from')
                             ->default(now()->toDateString()),
-                        DatePicker::make('date_until'),
+                        DatePicker::make('date_until')
+                            ->default(now()->toDateString()),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -168,19 +204,46 @@ class TeachersAttandanceResource extends Resource
 
                         return $indicators;
                     }),
-
-
             ])
-            ->persistSortInSession()
             ->actions([
-                Tables\Actions\EditAction::make(),
-
+                Tables\Actions\EditAction::make()
+                    ->iconButton()
+                    ->successNotificationTitle('Attendance updated'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->requiresConfirmation(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('date', 'desc')
+            ->persistSortInSession()
+            ->persistSearchInSession()
+            ->persistColumnSearchesInSession();
+    }
+
+    private static function processImageUpload($file, $id): ?string
+    {
+        try {
+            $imageData = $file->get();
+            $base64Image = 'data:' . $file->getMimeType() . ';base64,' . base64_encode($imageData);
+
+            if ($id && $attendance = TeachersAttandance::find($id)) {
+                $attendance->update(['captured_image' => $base64Image]);
+            }
+
+            return $base64Image;
+        } catch (\Exception $e) {
+            report($e);
+            return null;
+        }
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            TotalCard::make(),
+        ];
     }
 
     public static function getRelations(): array

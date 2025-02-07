@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StudentsDatabaseResource\Pages;
 use App\Filament\Resources\StudentsDatabaseResource\RelationManagers;
 use App\Filament\Widgets\ListGalleryWidget;
+use App\Filament\Widgets\TotalActiveUserCard;
 use App\Models\StudentsDatabase;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -37,7 +38,6 @@ class StudentsDatabaseResource extends Resource
                             ->maxLength(255),
                         Forms\Components\Select::make('class_id')
                             ->label('Class')
-                            ->unique()
                             ->relationship('grade', 'name')
                             ->required()
                             ->searchable()
@@ -51,7 +51,9 @@ class StudentsDatabaseResource extends Resource
                                 '1' => 'Active',
                                 '0' => 'Inactive',
                             ])
-                            ->default('true')
+                            ->default('0')
+
+                            ->disabled(fn(string $context, $record): bool => $context === 'create' || is_null($record?->face))
                             ->grouped(),
 
 
@@ -83,7 +85,8 @@ class StudentsDatabaseResource extends Resource
                     ->badge()
                     ->alignCenter(),
                 Tables\Columns\ToggleColumn::make('is_active')
-                    ->label('Status'),
+                    ->label('Status')
+                    ->disabled(fn($record) => is_null($record->face)),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -108,7 +111,8 @@ class StudentsDatabaseResource extends Resource
     public static function getWidgets(): array
     {
         return [
-            ListGalleryWidget::class
+            ListGalleryWidget::class,
+            TotalActiveUserCard::class
         ];
     }
 

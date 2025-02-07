@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StudentsAttandanceResource\Pages;
 use App\Filament\Resources\StudentsAttandanceResource\RelationManagers;
+use App\Filament\Widgets\AdvancedStatsOverviewWidget;
+use App\Filament\Widgets\TotalCard;
 use App\Models\StudentsAttandance;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -26,7 +28,8 @@ class StudentsAttandanceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
 
-    protected static ?string $navigationGroup = 'Attandance';
+    protected static ?string $navigationGroup = 'Attendance';
+    protected static int $resultsPerPageOptions = 25;
 
 
     public static function form(Form $form): Form
@@ -173,6 +176,13 @@ class StudentsAttandanceResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+    }
+
+    public static function getWidgets(): array
+    {
+        return [
+            TotalCard::make(),
+        ];
     }
 
     public static function getRelations(): array

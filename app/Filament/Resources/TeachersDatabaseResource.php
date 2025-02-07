@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TeachersDatabaseResource\Pages;
 use App\Filament\Widgets\ListGalleryWidget;
+use App\Filament\Widgets\TotalActiveUserCard;
 use App\Models\TeachersDatabase;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -41,7 +42,9 @@ class TeachersDatabaseResource extends Resource
                                 '1' => 'Active',
                                 '0' => 'Inactive',
                             ])
-                            ->default('true')
+                            ->default('0')
+
+                            ->disabled(fn(string $context, $record): bool => $context === 'create' || is_null($record?->face))
                             ->grouped(),
                         Forms\Components\TextInput::make('position')
                             ->default('teacher')
@@ -62,7 +65,6 @@ class TeachersDatabaseResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->label('#ID')
-
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('name')
@@ -76,7 +78,8 @@ class TeachersDatabaseResource extends Resource
                     ->badge()
                     ->alignCenter(),
                 Tables\Columns\ToggleColumn::make('is_active')
-                    ->label('Status'),
+                    ->label('Status')
+                    ->disabled(fn($record) => is_null($record->face)),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -109,7 +112,8 @@ class TeachersDatabaseResource extends Resource
     public static function getWidgets(): array
     {
         return [
-            ListGalleryWidget::class
+            ListGalleryWidget::class,
+            TotalActiveUserCard::class
         ];
     }
 

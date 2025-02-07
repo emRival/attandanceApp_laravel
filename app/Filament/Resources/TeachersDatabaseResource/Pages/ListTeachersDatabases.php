@@ -3,6 +3,10 @@
 namespace App\Filament\Resources\TeachersDatabaseResource\Pages;
 
 use App\Filament\Resources\TeachersDatabaseResource;
+use App\Filament\Widgets\AdvancedStatsOverviewWidget;
+use App\Filament\Widgets\TotalActiveUserCard;
+use App\Models\TeachersDatabase;
+use EightyNine\FilamentAdvancedWidget\AdvancedWidget;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
@@ -16,4 +20,16 @@ class ListTeachersDatabases extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            TotalActiveUserCard::make([
+                'title' => 'Teachers',
+                'database' => TeachersDatabase::class,
+            ]),
+        ];
+    }
+
+
 }
