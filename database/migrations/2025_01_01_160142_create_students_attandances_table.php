@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('students_attandances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained('students_databases')->cascadeOnDelete();
-            $table->foreignId('times_config_id')->constrained('times_configs')->cascadeOnDelete();
+            $table->string('session');
             $table->date('date');
             $table->time('time')->nullable();
-            $table->enum('status', ['attend', 'late', 'absent'])->default('absent');
+            $table->enum('status', ['attend', 'late', 'sick', 'absent'])->default('absent');
             $table->longText('captured_image')->nullable();
             $table->timestamps();
         });

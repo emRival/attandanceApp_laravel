@@ -35,4 +35,9 @@ class StudentsDatabase extends Model
     {
         return $this->belongsTo(Grades::class, 'class_id');
     }
+
+    public function teacherProfile()
+    {
+        return $this->belongsTo(TeacherProfile::class, 'teacherprofile_id');
+    }
 }

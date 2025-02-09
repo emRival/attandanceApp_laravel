@@ -6,13 +6,11 @@ use App\Filament\Resources\TeachersAttandanceResource;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Rupadana\ApiService\Http\Handlers;
-
-use App\Models\Student;
-use App\Models\StudentsAttandance;
-use App\Models\StudentsDatabase;
-use App\Models\Teacher;
 use App\Models\TeachersAttandance;
 use App\Models\TeachersDatabase;
+use App\Models\TimesConfig;
+use App\Models\StudentsAttandance;
+use App\Models\StudentsDatabase;
 
 class CreateHandler extends Handlers
 {
@@ -26,88 +24,206 @@ class CreateHandler extends Handlers
 
     public function handler(Request $request)
     {
-        $attendances = $request->input(); // Ambil semua data sebagai array
+        $attendances = $request->all();
 
         if (!is_array($attendances)) {
             return static::sendErrorResponse("Invalid data format", 400);
         }
 
         foreach ($attendances as $attendanceData) {
-            // Pastikan data memiliki format yang benar
-            if (!isset($attendanceData['position'], $attendanceData['id'], $attendanceData['date'], $attendanceData['time'], $attendanceData['times_config_id'])) {
-                continue; // Lewati data yang tidak valid
+            if (!isset(
+                $attendanceData['position'],
+                $attendanceData['id'],
+                $attendanceData['date'],
+                $attendanceData['time'],
+                $attendanceData['times_config_id'],
+                $attendanceData['late']
+            )) {
+                continue;
             }
 
             $position = $attendanceData['position'];
-            $id = $attendanceData['id'];
+            $idUser = $attendanceData['id'];
             $date = Carbon::parse($attendanceData['date'])->toDateString();
-            $time = $attendanceData['time'];
             $timesConfigId = $attendanceData['times_config_id'];
-            $capturedImage = $attendanceData['captured_image'] ?? null;
+
+            if ($position === 'teacher') {
+                $this->handleTeacherAttendance(
+                    attendanceData: $attendanceData,
+                    date: $date,
+                    idUser: $idUser,
+                    timesConfigId: $timesConfigId
+                );
+            }
 
             if ($position === 'student') {
-                $this->handleAttendance(
-                    StudentsAttandance::class,
-                    StudentsDatabase::class,
-                    'student_id',
-                    $id,
-                    $date,
-                    $time,
-                    $timesConfigId,
-                    $capturedImage
-                );
-            } elseif ($position === 'teacher') {
-                $this->handleAttendance(
-                    TeachersAttandance::class,
-                    TeachersDatabase::class,
-                    'teacher_id',
-                    $id,
-                    $date,
-                    $time,
-                    $timesConfigId,
-                    $capturedImage
+                $this->handleStudentAttendance(
+                    attendanceData: $attendanceData,
+                    date: $date,
+                    idUser: $idUser,
+                    timesConfigId: $timesConfigId
                 );
             }
         }
 
-        return static::sendSuccessResponse([], "All attendances processed successfully");
+        return static::sendSuccessResponse([], "Attendance processed successfully");
     }
 
-    private function handleAttendance($attendanceModel, $userModel, $userIdField, $userId, $date, $time, $timesConfigId, $capturedImage)
+    private function handleTeacherAttendance(array $attendanceData, string $date, int $idUser, int $timesConfigId)
     {
-        // Periksa apakah ada data di tanggal ini
-        $existingAttendance = $attendanceModel::where('date', $date)
-            ->where('times_config_id', $timesConfigId)
-            ->first(); 
+        // Validasi guru dan time config
+        $teacher = TeachersDatabase::find($idUser);
+        $timeConfig = TimesConfig::find($timesConfigId);
 
-        if (!$existingAttendance) {
-            // Data pertama kali masuk di tanggal ini
-            $users = $userModel::all();
+        // Validasi kecocokan time config dengan profile_id
+        if (!$teacher || !$timeConfig || $timeConfig->teacherprofile_id != $teacher->teacherprofile_id) {
+            return static::sendErrorResponse("Invalid time configuration for this teacher", 400);
+        }
 
-            foreach ($users as $user) {
-                $attendanceModel::create([
-                    $userIdField => $user->id,
-                    'time' => ($user->id == $userId) ? $time : null,
-                    'times_config_id' => $timesConfigId,
+        // Cek apakah ini data pertama untuk tanggal ini
+        $isFirstEntry = !TeachersAttandance::where('date', $date)->exists() &&
+            !StudentsAttandance::where('date', $date)->exists();
+
+        // Proses data absensi utama
+        $this->processMainAttendance(
+            teacher: $teacher,
+            timeConfig: $timeConfig,
+            attendanceData: $attendanceData,
+            date: $date
+        );
+
+        // Jika ini data pertama, buat semua entri absent
+        if ($isFirstEntry) {
+            $this->createAllDefaultEntries($date);
+        }
+    }
+
+    private function handleStudentAttendance(array $attendanceData, string $date, int $idUser, int $timesConfigId)
+    {
+        // Validasi siswa dan time config
+        $student = StudentsDatabase::find($idUser);
+        $timeConfig = TimesConfig::find($timesConfigId);
+
+        // Validasi kecocokan time config dengan profile_id
+        if (!$student || !$timeConfig || $timeConfig->teacherprofile_id != $student->teacherprofile_id) {
+            return static::sendErrorResponse("Invalid time configuration for this teacher", 400);
+        }
+
+        // Cek apakah ini data pertama untuk tanggal ini
+        $isFirstEntry = !TeachersAttandance::where('date', $date)->exists() &&
+            !StudentsAttandance::where('date', $date)->exists();
+
+        // Proses data absensi utama
+        $this->processMainStudentAttendance(
+            student: $student,
+            timeConfig: $timeConfig,
+            attendanceData: $attendanceData,
+            date: $date
+        );
+
+        // Jika ini data pertama, buat semua entri absent
+        if ($isFirstEntry) {
+            $this->createAllDefaultEntries($date);
+        }
+    }
+
+    private function processMainAttendance($teacher, $timeConfig, $attendanceData, $date)
+    {
+        // Cek existing data
+        $existingAttendance = TeachersAttandance::where([
+            'teacher_id' => $teacher->id,
+            'date' => $date,
+            'session' => $timeConfig->name
+        ])->first();
+
+        // hanya bisa update jika statusnya absent
+        if ($existingAttendance && $existingAttendance->status !== 'absent') {
+            return;
+        }
+
+        // Update atau create data
+        TeachersAttandance::updateOrCreate(
+            [
+                'teacher_id' => $teacher->id,
+                'date' => $date,
+                'session' => $timeConfig->name
+            ],
+            [
+                'time' => $attendanceData['time'],
+                'captured_image' => $attendanceData['captured_image'] ?? null,
+                'status' => $attendanceData['late'] == 0 ? 'attend' : 'late',
+                'late' => $attendanceData['late'],
+            ]
+        );
+    }
+    private function processMainStudentAttendance($student, $timeConfig, $attendanceData, $date)
+    {
+        // Cek existing data
+        $existingAttendance = StudentsAttandance::where([
+            'student_id' => $student->id,
+            'date' => $date,
+            'session' => $timeConfig->name
+        ])->first();
+
+        // hanya bisa update jika statusnya absent
+        if ($existingAttendance && $existingAttendance->status !== 'absent') {
+            return;
+        }
+
+        // Update atau create data
+        StudentsAttandance::updateOrCreate(
+            [
+                'student_id' => $student->id,
+                'date' => $date,
+                'session' => $timeConfig->name
+            ],
+            [
+                'time' => $attendanceData['time'],
+                'captured_image' => $attendanceData['captured_image'] ?? null,
+                'status' => $attendanceData['late'] == 0 ? 'attend' : 'late',
+                'late' => $attendanceData['late'],
+            ]
+        );
+    }
+
+    private function createAllDefaultEntries(string $date)
+    {
+        // Handle semua guru
+        $teachers = TeachersDatabase::all();
+        foreach ($teachers as $teacher) {
+            $timeConfigs = TimesConfig::where('teacherprofile_id', $teacher->teacherprofile_id)->get();
+            foreach ($timeConfigs as $config) {
+                TeachersAttandance::firstOrCreate([
+                    'teacher_id' => $teacher->id,
                     'date' => $date,
-                    'status' => ($user->id == $userId) ? 'attend' : 'absent',
-                    'captured_image' => ($user->id == $userId) ? $capturedImage : null,
+                    'session' => $config->name
+                ], [
+                    'times_config_id' => $config->id,
+                    'status' => 'absent',
+                    'time' => null,
+                    'captured_image' => null,
+                    'late' => 0
                 ]);
             }
-        } else {
-            // Perbarui data untuk pengguna tertentu
-            $attendanceModel::updateOrCreate(
-                [
-                    $userIdField => $userId,
+        }
+
+        // Handle semua siswa (contoh implementasi)
+        $students = StudentsDatabase::all();
+        foreach ($students as $student) {
+            $timeConfigs = TimesConfig::where('teacherprofile_id', $student->teacherprofile_id)->get();
+            foreach ($timeConfigs as $config) {
+                StudentsAttandance::firstOrCreate([
+                    'student_id' => $student->id,
                     'date' => $date,
-                ],
-                [
-                    'time' => $time,
-                    'times_config_id' => $timesConfigId,
-                    'captured_image' => $capturedImage,
-                    'status' => 'attend',
-                ]
-            );
+                    'session' => $config->name
+                ], [
+
+                    'status' => 'absent',
+                    'time' => null,
+                    'captured_image' => null,
+                    'late' => 0
+                ]);
+            }
         }
     }
 }

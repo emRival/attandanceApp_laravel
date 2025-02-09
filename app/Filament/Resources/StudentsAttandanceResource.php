@@ -21,6 +21,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Support\Facades\Storage;
 
 class StudentsAttandanceResource extends Resource
 {
@@ -40,39 +41,69 @@ class StudentsAttandanceResource extends Resource
                     ->schema([
                         Forms\Components\Section::make()
                             ->schema([
-                                Forms\Components\Select::make('student_id')
-                                    ->required()
-                                    ->label('Student Name ')
-                                    ->relationship('student', 'name')
-                                    ->searchable()
-                                    ->placeholder('Select Student'),
+                                Forms\Components\Select::make('students_id')
+                                        ->required()
+                                        ->label('Student')
+                                        ->relationship('student', 'name')
+                                        ->searchable()
+                                        ->preload()
+                                        ->disabled(fn(string $context): bool => $context === 'edit')
+                                        ->columnSpanFull(),
                                 Forms\Components\Select::make('times_config_id')
                                     ->label('Session')
                                     ->required()
                                     ->relationship('timeConfig', 'name')
                                     ->placeholder('Select Times Session'),
-                                Forms\Components\Select::make('status')
-                                    ->required()
-                                    ->options([
-                                        'attend' => 'Attend',
-                                        'late' => 'Late',
-                                        'absent' => 'Absent',
+                                    Forms\Components\Grid::make(3)->schema([
+                                        Forms\Components\Select::make('status')
+                                            ->required()
+                                            ->options([
+                                                'attend' => 'Attend',
+                                                'late' => 'Late',
+                                                'absent' => 'Absent',
+                                            ]),
+
+                                        Forms\Components\DatePicker::make('date')
+                                            ->required()
+                                            ->disabled(fn(string $context): bool => $context === 'edit')
+                                            ->native(false),
+
+                                        Forms\Components\TimePicker::make('time')
+                                            ->required()
+                                            ->seconds(false),
+
                                     ]),
                             ]),
                     ]),
                 Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\Section::make()
-                            ->schema([
-                                Forms\Components\DatePicker::make('date')
-                                    ->required(),
-                                Forms\Components\TimePicker::make('time')
-                                    ->required(),
-                                Forms\Components\FileUpload::make('captured_image')
-                                    ->image()
-                                    ->directory('students_attandance')
-                                    ->visibility('private'),
-                            ])
+                        Forms\Components\Section::make('Image')
+                                ->schema([
+                                    Forms\Components\Placeholder::make('Image Preview')
+                                        ->hiddenLabel()
+                                        ->content(fn($record) => $record && $record->captured_image
+                                            ? view('livewire.image-preview', ['image' => $record->captured_image])
+                                            : 'No image available'),
+
+
+                                    Forms\Components\FileUpload::make('image_upload')
+                                        ->label('Upload Image')
+                                        ->disk('local')
+                                        ->directory('temp-uploads')
+                                        ->visibility('private')
+                                        ->image()
+                                        ->maxSize(2048)
+                                        ->reactive()
+                                        ->afterStateUpdated(function ($state, $set, $record) {
+                                            if (!$state) return;
+
+                                            $base64Image = self::processImageUpload($state, $record?->id);
+                                            $set('captured_image', $base64Image);
+
+                                            // Cleanup temporary file
+                                            Storage::disk('local')->delete($state->path());
+                                        }),
+                                ]),
                     ]),
 
             ]);
@@ -89,7 +120,7 @@ class StudentsAttandanceResource extends Resource
                 Tables\Columns\TextColumn::make('student.grade.name')
                     ->label('Class')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('timeConfig.name')
+                Tables\Columns\TextColumn::make('session')
                     ->label('Session')
                     ->numeric()
                     ->sortable(),

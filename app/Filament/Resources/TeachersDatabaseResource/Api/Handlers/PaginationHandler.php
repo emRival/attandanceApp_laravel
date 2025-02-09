@@ -18,12 +18,12 @@ class PaginationHandler extends Handlers
     public function handler()
     {
         // Query untuk data teacher dengan face yang tidak kosong
-        $teacherQuery = TeachersDatabase::select('id', 'position', 'face')
+        $teacherQuery = TeachersDatabase::select('id', 'position','teacherprofile_id', 'face')
             ->whereNotNull('face') // Menampilkan hanya teacher
             ->where('is_active', true); // Menampilkan hanya teacher yang is_active = true
 
         // Query untuk data student dengan face yang tidak kosong
-        $studentQuery = StudentsDatabase::select('id', 'position', 'face')
+        $studentQuery = StudentsDatabase::select('id', 'position','teacherprofile_id', 'face')
             ->whereNotNull('face')
             ->where('is_active', true);  // Menampilkan hanya student
 

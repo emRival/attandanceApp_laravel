@@ -11,13 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('times_configs', function (Blueprint $table) {
-            $table->id();
-            $table->string('name')->unique();
-            $table->time('start');
-            $table->time('end');
-            $table->integer('late')->default(0);
-            $table->timestamps();
+        Schema::table('students_databases', function (Blueprint $table) {
+            $table->foreignId('teacherprofile_id')->nullable()->constrained('teacher_profiles')->onDelete('set null');
+
         });
     }
 
@@ -26,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('times_configs');
+        Schema::table('students_databases', function (Blueprint $table) {
+            $table->dropConstrainedForeignId('teacherprofile_id');
+        });
     }
 };

@@ -10,6 +10,7 @@ class TimesConfig extends Model
         'name',
         'start',
         'end',
+        'late',
     ];
 
     public function teachers()
@@ -22,5 +23,9 @@ class TimesConfig extends Model
         return $this->hasMany(StudentsAttandance::class, 'time_config_id');
     }
 
-    
+    // teacher profile
+    public function teacherProfile()
+    {
+        return $this->belongsTo(TeacherProfile::class, 'teacherprofile_id');
+    }
 }

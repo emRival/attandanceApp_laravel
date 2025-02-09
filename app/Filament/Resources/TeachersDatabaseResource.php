@@ -27,33 +27,57 @@ class TeachersDatabaseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Grid::make(4)
+                Forms\Components\Group::make()
                     ->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->maxLength(255)
-                            ->columnSpanFull(),
-                        Forms\Components\TextInput::make('nip')
-                            ->maxLength(255),
-                        Forms\Components\ToggleButtons::make('is_active')
-                            ->label('User Status')
-                            ->boolean()
-                            ->options([
-                                '1' => 'Active',
-                                '0' => 'Inactive',
-                            ])
-                            ->default('0')
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\Select::make('teacherprofile')
+                                    ->label('Profile')
+                                    ->required()
+                                    ->relationship('teacherprofile', 'name')
+                                    ->default(
+                                        '1'
+                                    )
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('name')
+                                            ->required(),
+                                    ])
+                                    ->placeholder('Select Profile'),
+                                Forms\Components\TextInput::make('nip')
+                                    ->maxLength(255)
+                                    ->numeric(),
 
-                            ->disabled(fn(string $context, $record): bool => $context === 'create' || is_null($record?->face))
-                            ->grouped(),
-                        Forms\Components\TextInput::make('position')
-                            ->default('teacher')
-                            ->disabled(),
+                            ]),
 
-                        Forms\Components\TextInput::make('face')
-                            ->label('Face 128D Dataset')
-                            ->disabled(),
+
                     ]),
+
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\ToggleButtons::make('is_active')
+                                    ->label('User Status')
+                                    ->boolean()
+                                    ->options([
+                                        '1' => 'Active',
+                                        '0' => 'Inactive',
+                                    ])
+                                    ->default('0')
+                                    ->disabled(fn(string $context, $record): bool => $context === 'create' || is_null($record?->face))
+                                    ->grouped(),
+                                Forms\Components\Textarea::make('face')
+                                    ->label('Face 128D Dataset')
+                                    ->disabled(),
+                            ]),
+                    ])
+                    ->hidden(
+                        fn(string $context) => $context === 'create',
+                    ),
+
 
 
             ]);
@@ -71,8 +95,12 @@ class TeachersDatabaseResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nip')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('position')
+                Tables\Columns\TextColumn::make('teacherprofile.name')
+                    ->label('Profile')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('position')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('count_face_recognation')
                     ->label('Dataset')
                     ->badge()
@@ -80,14 +108,7 @@ class TeachersDatabaseResource extends Resource
                 Tables\Columns\ToggleColumn::make('is_active')
                     ->label('Status')
                     ->disabled(fn($record) => is_null($record->face)),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //

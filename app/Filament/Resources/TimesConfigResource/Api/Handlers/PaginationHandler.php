@@ -14,7 +14,7 @@ class PaginationHandler extends Handlers
     public function handler()
     {
         // Ambil data tanpa kolom `created_at` dan `updated_at`
-        $data = static::getEloquentQuery()->select('id', 'name', 'start', 'end')->get();
+        $data = static::getEloquentQuery()->select('id', 'name', 'start', 'end', 'late', 'teacherprofile_id')->get();
 
         // Format jam agar hanya menampilkan jam dan menit (HH:MM)
         $data = $data->map(function ($item) {

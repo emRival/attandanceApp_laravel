@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,23 +12,27 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('students_databases', function (Blueprint $table) {
+        Schema::create('teacher_profiles', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('class_id')->constrained('grades')->cascadeOnDelete();
-            $table->string('nis')->nullable();
-            $table->string('position')->default('student');
-            $table->boolean('is_active')->default(false);
-            $table->longText('face')->nullable();
             $table->timestamps();
         });
+
+        // Tambahkan data default "General"
+        DB::table('teacher_profiles')->insert([
+            'name' => 'General',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
+
     /**
+     *
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('students_databases');
+        Schema::dropIfExists('teacher_profiles');
     }
 };

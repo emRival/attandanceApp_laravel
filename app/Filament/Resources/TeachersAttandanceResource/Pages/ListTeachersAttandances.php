@@ -8,6 +8,7 @@ use App\Models\TeachersAttandance;
 use App\Models\TeachersDatabase;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ListTeachersAttandances extends ListRecords
 {
@@ -23,7 +24,9 @@ class ListTeachersAttandances extends ListRecords
 
     protected function getHeaderWidgets(): array
     {
-        if (!auth()->user()->hasRole('super_admin')) {
+
+
+        if (!Auth::check() || !Auth::user()->hasRole('super_admin')) {
             return [];
         }
 
@@ -33,6 +36,7 @@ class ListTeachersAttandances extends ListRecords
                 'model' => TeachersAttandance::class,
                 'database' => TeachersDatabase::class,
             ]),
+
         ];
     }
 }

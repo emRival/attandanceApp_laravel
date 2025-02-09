@@ -6,6 +6,7 @@ use App\Filament\Resources\TeachersAttandanceResource\Pages;
 use App\Filament\Resources\TeachersAttandanceResource\RelationManagers;
 use App\Filament\Widgets\TotalCard;
 use App\Models\TeachersAttandance;
+use App\Models\TimesConfig;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -46,13 +47,11 @@ class TeachersAttandanceResource extends Resource
                                         ->disabled(fn(string $context): bool => $context === 'edit')
                                         ->columnSpanFull(),
 
-                                    Forms\Components\Select::make('times_config_id')
+                                    Forms\Components\Select::make('session')
                                         ->label('Session')
                                         ->required()
-                                        ->relationship('timeConfig', 'name')
-                                        ->disabled(fn(string $context): bool => $context === 'edit')
-                                        ->columnSpanFull(),
-
+                                        ->options(TimesConfig::pluck('name', 'name')->toArray()) // Pastikan `toArray()`
+                                        ->placeholder(fn($record) => $record?->session),
                                     Forms\Components\Grid::make(3)->schema([
                                         Forms\Components\Select::make('status')
                                             ->required()
@@ -122,7 +121,7 @@ class TeachersAttandanceResource extends Resource
                     ->sortable()
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('timeConfig.name')
+                Tables\Columns\TextColumn::make('session')
                     ->label('Session')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -146,6 +145,10 @@ class TeachersAttandanceResource extends Resource
                         default => 'gray'
                     })
                     ->toggleable(),
+                Tables\Columns\TextColumn::make('late')
+                    ->label('Late (minutes)')
+                    ->suffix(' Minutes')
+                    ->toggleable(),
 
                 Tables\Columns\IconColumn::make('captured_image')
                     ->label('Image')
@@ -159,9 +162,7 @@ class TeachersAttandanceResource extends Resource
                             ]) : null)
                             ->modalWidth(MaxWidth::Medium)
                             ->modalSubmitAction(false)
-                            ->disabled(
-                                fn($record) => !$record->captured_image
-                            )
+                            ->disabled(fn($record) => !$record->captured_image)
                     )
             ])
             ->filters([

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('nip')->nullable();
             $table->string('position')->default('teacher');
-            $table->boolean('is_active')->default(true);
+            $table->boolean('is_active')->default(false);
             $table->longText('face')->nullable();
             $table->timestamps();
         });

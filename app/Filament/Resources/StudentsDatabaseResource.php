@@ -29,42 +29,65 @@ class StudentsDatabaseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Grid::make(4)
+                Forms\Components\Group::make()
                     ->schema([
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\TextInput::make('name')
+                                    ->required()
+                                    ->columnSpanFull()
+                                    ->maxLength(255),
+                                Forms\Components\Select::make('class_id')
+                                    ->label('Class')
+                                    ->relationship('grade', 'name')
+                                    ->required()
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('name')
+                                            ->required(),
+                                    ])
+                                    ->searchable()
+                                    ->preload(),
+                                Forms\Components\Select::make('teacherprofile')
+                                    ->label('Profile')
+                                    ->required()
+                                    ->relationship('teacherprofile', 'name')
+                                    ->default(
+                                        '1'
+                                    )
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('name')
+                                            ->required(),
+                                    ])
+                                    ->placeholder('Select Profile'),
+                                Forms\Components\TextInput::make('nis')
+                                    ->numeric(),
+                                    
 
-                        Forms\Components\TextInput::make('name')
-                            ->required()
-                            ->columnSpanFull()
-                            ->maxLength(255),
-                        Forms\Components\Select::make('class_id')
-                            ->label('Class')
-                            ->relationship('grade', 'name')
-                            ->required()
-                            ->searchable()
-                            ->preload(),
-                        Forms\Components\TextInput::make('nis')
-                            ->maxLength(255),
-                        Forms\Components\ToggleButtons::make('is_active')
-                            ->label('User Status')
-                            ->boolean()
-                            ->options([
-                                '1' => 'Active',
-                                '0' => 'Inactive',
-                            ])
-                            ->default('0')
-
-                            ->disabled(fn(string $context, $record): bool => $context === 'create' || is_null($record?->face))
-                            ->grouped(),
-
-
-                        Forms\Components\TextInput::make('position')
-                            ->default('student')
-                            ->disabled(),
-
-                        Forms\Components\Textarea::make('face')
-                            ->disabled()
-                            ->columnSpanFull()
+                            ]),
                     ]),
+                Forms\Components\Group::make()
+                    ->schema([
+                        Forms\Components\Section::make()
+                            ->schema([
+                                Forms\Components\ToggleButtons::make('is_active')
+                                    ->label('User Status')
+                                    ->boolean()
+                                    ->options([
+                                        '1' => 'Active',
+                                        '0' => 'Inactive',
+                                    ])
+                                    ->default('0')
+                                    ->disabled(fn(string $context, $record): bool => $context === 'create' || is_null($record?->face))
+                                    ->grouped(),
+                                Forms\Components\Textarea::make('face')
+                                    ->disabled(),
+                            ]),
+
+                    ])
+                    ->hidden(
+                        fn(string $context) => $context === 'create',
+                    ),
+
             ]);
     }
 
@@ -78,7 +101,8 @@ class StudentsDatabaseResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('nis')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('position')
+                Tables\Columns\TextColumn::make('teacherprofile.name')
+                ->label('Profile')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('count_face_recognation')
                     ->label('Dataset')

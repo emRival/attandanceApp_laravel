@@ -8,11 +8,12 @@ class TeachersAttandance extends Model
 {
     protected $fillable = [
         'teacher_id',
-        'times_config_id',
+        'session',
         'date',
         'time',
         'status',
         'captured_image',
+        'late'
     ];
 
     public function teacher()

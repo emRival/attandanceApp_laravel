@@ -8,11 +8,11 @@ class TeachersDatabase extends Model
 {
     protected $fillable = [
         'name',
-        'class',
         'nip',
         'position',
         'is_active',
-        'face'
+        'face',
+        'teacherprofile_id'
     ];
 
     public function attendances()
@@ -34,5 +34,10 @@ class TeachersDatabase extends Model
     public function user()
     {
         return $this->hasOne(User::class, 'teacher_id');
+    }
+
+    public function teacherProfile()
+    {
+        return $this->belongsTo(TeacherProfile::class, 'teacherprofile_id');
     }
 }

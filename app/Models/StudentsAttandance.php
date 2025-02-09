@@ -9,11 +9,12 @@ class StudentsAttandance extends Model
 
         protected $fillable = [
             'student_id',
-            'times_config_id',
+            'session',
             'date',
             'time',
             'status',
             'captured_image',
+            'late',
         ];
 
         public function student()
