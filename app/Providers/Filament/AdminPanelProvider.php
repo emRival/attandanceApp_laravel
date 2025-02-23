@@ -64,6 +64,7 @@ class AdminPanelProvider extends PanelProvider
 
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->favicon('https://mafatihislamicschool.sch.id/wp-content/uploads/2022/04/cropped-cropped-Cap-Logo-Mafatih-2.png');
     }
 }
