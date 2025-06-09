@@ -1,4 +1,4 @@
-# Aplikasi Absensi Laravel ⏱️
+[# Aplikasi Absensi Laravel ⏱️
 
 <div style="text-align: center;">
 <a href="https://github.com/emRival/attandanceApp_laravel"><img src="https://img.shields.io/github/stars/emRival/attandanceApp_laravel?style=for-the-badge" style="margin-right: 8px;"  alt="Stars"></a>
@@ -83,3 +83,4 @@ Lisensi proyek tidak disebutkan.
 
 ---
 *Dibuat dengan ❤️ oleh [emRival](https://github.com/emRival)*
+](https://github.com/emRival/attandanceApp_laravel/tree/main)
