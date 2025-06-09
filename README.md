@@ -1,4 +1,4 @@
-```markdown
+
 # Aplikasi Absensi Cerdas 🏢
 
 <p align="center">
@@ -82,4 +82,4 @@ Tidak disebutkan.
 
 ---
 *Dibuat dengan ❤️ oleh [emRival](https://github.com/emRival)*
-```
+
